@@ -1,78 +1,100 @@
-# covid-19 — Static Malware Analysis
+# Static Malware Analysis: Baby Ransom
 
-## 1. Overview
+## 1. Executive Summary
 
-- **Category:** Ransomware-like ELF sample
-- **Source:** crackmes.one
-- **Analysis type:** Static analysis
-- **Status:** Initial static analysis completed
+This report documents the static analysis of a Linux ELF executable identified as a ransomware-like sample named `covid-19`, obtained from crackmes.one.
 
-### Summary
+The sample contains a ransom demand requesting 0.2 Bitcoin in exchange for access to files. Analysis in Ghidra identified directory traversal, filename processing, file input/output, file removal, and an apparent XOR-based file transformation.
 
-The sample contains a ransom demand requesting 0.2 Bitcoin to regain access to files. Static analysis identified directory enumeration, filename processing, file input/output, file removal, and an apparent XOR-based byte transformation. The complete runtime behavior and cryptographic properties were not verified.
+The analysis focused on understanding the program's structure and behavior without executing the sample.
 
-## 2. Sample Identification
+## 2. Sample Information
 
-| Property | Value |
-|---|---|
-| Sample name | covid-19 |
-| File format | ELF |
-| Architecture | 64-bit |
-| SHA-256 | To be recorded |
-| Source | crackmes.one |
-| Dynamic execution | Not performed |
+| Property          | Value           |
+| ----------------- | --------------- |
+| Sample name       | covid-19        |
+| File format       | ELF             |
+| Architecture      | 64-bit          |
+| Source            | crackmes.one    |
+| SHA-256           | To be recorded  |
+| Analysis method   | Static analysis |
+| Primary tool      | Ghidra          |
+| Dynamic execution | Not performed   |
 
 ## 3. Analysis Environment
 
-The sample was examined in Kali Linux using Ghidra. Analysis focused on decompiled pseudocode, function references, strings, and data flow. The sample was not intentionally executed during this analysis.
+The sample was examined in a Kali Linux virtual machine using Ghidra.
+
+The analysis involved examining decompiled pseudocode, identifying functions and cross-references, and tracing data flow between directory handling, file operations, and the suspected encryption routine.
+
+The sample was not intentionally executed during this analysis. The virtual machine was prepared for isolated analysis.
 
 ## 4. Behavioral Analysis
 
-### 4.1 Directory traversal — `BigBoy`
+### 4.1 Directory Traversal
 
-The function uses `opendir()` and `readdir()` to enumerate directory entries. It compares entry names using functions including `strcmp()` and `strstr()`, suggesting that files are selected according to filename-related conditions. The exact directory scope and selection criteria require further verification.
+The function renamed as `BigBoy` uses `opendir()` and `readdir()` to open and enumerate a directory.
 
-### 4.2 File processing
+The code compares directory-entry names against a string using functions such as `strcmp()` and `strstr()`. This suggests that the program selects files based on filename-related conditions.
 
-The code uses `fopen()`, `fgetc()`, `fputc()`, and `fclose()` to read and write file data. It also calls `remove()` on a directory-entry filename. The exact relationship between the input path, output path, and removed file should be verified by tracing the arguments and working directory.
+The exact directory scope and complete selection criteria require further verification.
 
-### 4.3 Suspected XOR transformation
+### 4.2 File Processing
 
-The file-processing loop contains an XOR operation involving a byte read from an input stream and a value derived from a pseudorandom number. The code calls `srand(0xdeadbeef)` before `rand()`. A fixed seed makes the pseudorandom sequence reproducible for the same C library implementation.
+The identified function uses file operations including `fopen()`, `fgetc()`, `fputc()`, and `fclose()`.
 
-This supports the presence of an XOR-based transformation, but the complete algorithm, key handling, and behavior across files and executions were not conclusively established.
+The code appears to read data from a file, transform data conditionally, and write output to another stream. It also calls `remove()` on a directory-entry filename.
 
-### 4.4 Filename processing — `slashes`
+The precise relationship between the input file, output file, and removal operation should be verified by tracing the paths and arguments.
 
-The function uses string operations including `strcat()`, `strstr()`, and `strncpy()`. The string `corona` appears in this logic. Its exact purpose has not yet been established.
+### 4.3 Suspected Encryption Routine
 
-### 4.5 File metadata — `littleboy`
+The file-processing loop contains an XOR operation involving a byte read from the input stream and a value derived from a pseudorandom number.
 
-The function calls `xstat`. This is associated with retrieving file metadata on some Linux/glibc interfaces, but the exact role in this sample remains to be confirmed by inspecting the call arguments, return value, and subsequent branches.
+The program calls `srand(0xdeadbeef)` before calling `rand()`. The fixed seed suggests that the pseudorandom sequence is reproducible under the same C library implementation.
 
-### 4.6 Ransom demand
+This raises concerns about the strength of the transformation. However, the full algorithm, key handling, and behavior across different files and executions have not been conclusively established.
 
-The binary contains a message requesting 0.2 Bitcoin to regain access to files. Combined with the file-processing logic, this supports classifying the sample as ransomware-like. Runtime behavior was not verified.
+### 4.4 Filename Processing
+
+The function renamed as `slashes` manipulates strings using `strcat()`, `strstr()`, and `strncpy()`. The string `.corona` appears in this function.
+
+The exact purpose of this routine has not yet been established.
+
+### 4.5 Ransom Demand
+
+The executable contains a ransom message requesting 0.2 Bitcoin to regain access to files.
+
+This message, combined with the file-processing logic, supports classifying the sample as ransomware-like. The complete runtime behavior has not been verified.
 
 ## 5. Notable Strings and Artifacts
 
-- Ransom demand requesting 0.2 Bitcoin — record the exact original wording.
-- `corona` — appears in filename-processing logic.
+The following strings were observed during analysis:
+
+- `Transfer 0.2 Bitcoin to access your files` — ransom demand; record the exact original wording from the sample.
+- `.corona` — appears in filename-processing logic.
+- Other unusual strings should be documented only when their relevance can be established.
+
+The sample's SHA-256 hash should be recorded to identify the exact analyzed file.
 
 ## 6. Limitations and Unresolved Questions
 
-- What exact files and directories are targeted?
-- What are the exact input, output, and removal paths?
+The following questions remain open:
+
+- What exact files and directories does the program target?
+- What are the precise input and output paths used during file processing?
 - Does the XOR transformation execute for every byte and file?
 - How does the fixed-seed pseudorandom sequence influence the transformation?
-- What role does `littleboy` and its `xstat` call play?
+- What role does the `littleboy` function and its `xstat` call play?
 - What is the exact behavior of the ransom-note routine?
-- Are there additional behaviors not identified through static analysis?
+- Does the program implement any persistence, process manipulation, or additional destructive behavior?
+
+These questions require further static/ dynamic analysis before definitive conclusions can be made.
 
 ## 7. Conclusion
 
-Static analysis identified directory enumeration, filename processing, file reading and writing, file removal, an apparent XOR-based transformation, and a ransom demand. The observed behavior is consistent with a ransomware-like program. The complete encryption scheme, file-selection scope, and runtime effects remain unverified.
+Static analysis identified directory enumeration, filename processing, file reading and writing, file removal, an apparent XOR-based transformation, and a ransom demand.
 
-## Appendix: Screenshots
+The combination of these behaviors is consistent with a ransomware-like program. However, the complete encryption scheme, file-selection scope, and runtime effects remain unverified.
 
-Add cropped, relevant Ghidra screenshots to this folder. Embed them here with relative paths and captions. Do not include the malware binary in the repository.
+The analysis demonstrates how Ghidra can be used to reconstruct program behavior through function inspection, cross-references, and data-flow analysis without executing a suspicious binary.
