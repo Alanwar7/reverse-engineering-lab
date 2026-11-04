@@ -10,16 +10,16 @@ The analysis focused on understanding the program's structure and behavior witho
 
 ## 2. Sample Information
 
-| Property          | Value           |
-| ----------------- | --------------- |
-| Sample name       | covid-19        |
-| File format       | ELF             |
-| Architecture      | 64-bit          |
-| Source            | crackmes.one    |
-| SHA-256           | To be recorded  |
-| Analysis method   | Static analysis |
-| Primary tool      | Ghidra          |
-| Dynamic execution | Not performed   |
+| Property          | Value                                                             |
+| ----------------- | ---------------                                                   |
+| Sample name       | covid-19                                                          |
+| File format       | ELF                                                               |
+| Architecture      | 64-bit                                                            |
+| Source            | crackmes.one                                                      |
+| SHA-256           | a483e1a3d6e270bc34dec5c5d6d3f2d69cb08193e60e0dca0e0e561dbef0e932  |
+| Analysis method   | Static analysis                                                   |
+| Primary tool      | Ghidra                                                            |
+| Dynamic execution | Not performed                                                     |
 
 ## 3. Analysis Environment
 
@@ -71,11 +71,15 @@ This message, combined with the file-processing logic, supports classifying the 
 
 The following strings were observed during analysis:
 
-- `Transfer 0.2 Bitcoin to access your files` — ransom demand; record the exact original wording from the sample.
+- `HAHAHAHHAHAHHAHAHHAHAHAHAHAHHAHAHAHAHHAHHAHAHAHAHHAHAHAHAHAAHHAHAHHAHAAHHAHAHAHAHHA 
+   HAHAHAHHAHAH                                                             AHAHAHAHHA 
+   HAHAHAHHAHAH      SO YOU THOUGHT COVID-19 IS ONLY A HUMAN'S VIRUS?       AHAHAHAHHA 
+   HAHAHAHHAHAH     NOW TRANSFER 0.2 BTC TO THE FOLLOWING BITCOIN ADDRESS   AHAHAHAHHA 
+   HAHAHAHHAHAH                 TO GET YOUR FILES BACK                      AHAHAHAHHA 
+   HAHAHAHHAHAH         BTC : 1PC9aZC4hNX2rmmrt7uHTfYAS3hRbph4UN            AHAHAHAHHA` — ransom demand.
+  
 - `.corona` — appears in filename-processing logic.
-- Other unusual strings should be documented only when their relevance can be established.
 
-The sample's SHA-256 hash should be recorded to identify the exact analyzed file.
 
 ## 6. Limitations and Unresolved Questions
 
